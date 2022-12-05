@@ -89,3 +89,55 @@ def day_four():
         elif left[0] <= right[1] and left[1] >= right[1]:
             res += 1
     print(res)
+
+from collections import deque
+
+def day_five():
+    with open("AoC_day_five_columns.txt") as fd:
+        columns = fd.read()
+    with open("AoC_day_five_moves.txt") as fd:
+        moves = fd.read()
+
+    columns_data = [deque() for _ in range(len(columns.split("\n")[0])//4 + 1)]
+    for row in columns.split("\n"):
+        for i in range(0, len(row), 4):
+            if row[i + 1] != " ":
+                columns_data[i//4].append(row[i + 1])
+    moves_data = [
+        (int(move.split(" ")[1]), int(move.split(" ")[3]), int(move.split(" ")[-1]))
+        for move in moves.split("\n")
+    ]
+    
+    for (num, dep, arr) in moves_data:
+        for _ in range(num):
+            columns_data[arr-1].appendleft(columns_data[dep-1].popleft())
+
+    res = ""
+    for column in columns_data:
+        res += column.popleft()
+    print(res)
+
+def day_five_b():
+    with open("AoC_day_five_columns.txt") as fd:
+        columns = fd.read()
+    with open("AoC_day_five_moves.txt") as fd:
+        moves = fd.read()
+
+    columns_data = [deque() for _ in range(len(columns.split("\n")[0])//4 + 1)]
+    for row in columns.split("\n"):
+        for i in range(0, len(row), 4):
+            if row[i + 1] != " ":
+                columns_data[i//4].append(row[i + 1])
+    moves_data = [
+        (int(move.split(" ")[1]), int(move.split(" ")[3]), int(move.split(" ")[-1]))
+        for move in moves.split("\n")
+    ]
+    
+    for (num, dep, arr) in moves_data:
+        moved = [columns_data[dep-1].popleft() for _ in range(num)]
+        columns_data[arr-1].extendleft(reversed(moved))
+
+    res = ""
+    for column in columns_data:
+        res += column.popleft()
+    print(res)
