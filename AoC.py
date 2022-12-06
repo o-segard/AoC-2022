@@ -141,3 +141,18 @@ def day_five_b():
     for column in columns_data:
         res += column.popleft()
     print(res)
+
+def day_six():
+    with open("AoC_day_six.txt") as fd:
+        input = fd.read()
+
+    seen = deque(input[:14])
+    for i in range(14, len(input)):
+        if len(set(seen)) == 14:
+            print(i)
+            return
+        seen.popleft()
+        seen.append(input[i])
+        
+
+day_six()
