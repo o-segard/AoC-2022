@@ -154,5 +154,153 @@ def day_six():
         seen.popleft()
         seen.append(input[i])
         
+def day_seven():
+    class Node:
+        def __init__(self, name, size=0, parent=None, is_dir=False):
+            self.name = name
+            self.size = size
+            self.parent = parent
+            self.children = dict()
+            self.is_dir = is_dir
 
-day_six()
+    def build_tree():
+        head = Node("/")
+        current_node = head
+        for line in input.split("\n"):
+            if line == "$ ls":
+                pass
+            elif line == "$ cd /":
+                current_node = head
+            elif line == "$ cd ..":
+                current_node = current_node.parent
+            elif line[:5] == "$ cd ":
+                current_node = current_node.children[line[5:]]
+            elif line[:4] == "dir ":
+                if line[4:] not in current_node.children:
+                    current_node.children[line[4:]] = Node(line[4:], parent=current_node, is_dir=True)
+            else:
+                size, name = line.split(" ")
+                if name not in current_node.children:
+                    current_node.children[name] = Node(name, int(size), current_node)
+                    temp = current_node
+                    while temp is not None:
+                        temp.size += int(size)
+                        temp = temp.parent
+        return head
+    
+    def find_directories_part_a(node):
+        res = 0
+        for child in node.children.values():
+            if child.is_dir:
+                if child.size <= 100000:
+                    res += child.size
+                res += find_directories_part_a(child)
+        return res
+
+    def find_directory_part_b(node, target):
+        res = float("inf")
+        for child in node.children.values():
+            if child.is_dir and child.size >= target:
+                if child.size < res:
+                    res = child.size
+                temp = find_directory_part_b(child, target)
+                if temp < res:
+                    res = temp
+        return res
+                
+
+    with open("AoC_day_seven.txt") as fd:
+        input = fd.read()
+    head = build_tree()
+    print(find_directories_part_a(head))
+
+    current_unused = 70000000 - head.size
+    target = 30000000 - current_unused
+    print(find_directory_part_b(head, target))
+
+def day_eight():
+    with open("AoC_day_eight.txt") as fd:
+        input = fd.read()
+
+    lines = input.split("\n")
+    res = set()
+
+    max_left = [0 for _ in range(len(lines))]
+    max_top = [0 for _ in range(len(lines[0]))]
+    for i in range(len(lines)):
+        line = lines[i]
+        for j in range(len(line)):
+            visible = False
+            if i == 0 or j == 0:
+                visible = True
+            if int(line[j]) > max_left[i]:
+                visible = True
+                max_left[i] = int(line[j])
+            if int(line[j]) > max_top[j]:
+                visible = True
+                max_top[j] = int(line[j])
+            if visible:
+                res.add((i, j))
+    max_right = [0 for _ in range(len(lines))]
+    max_bottom = [0 for _ in range(len(lines[0]))]
+    for i in range(len(lines)):
+        line = lines[-i-1]
+        for j in range(len(line)):
+            visible = False
+            if i == 0 or j == 0:
+                visible = True
+            if int(line[-j-1]) > max_right[-i-1]:
+                visible = True
+                max_right[-i-1] = int(line[-j-1])
+            if int(line[-j-1]) > max_bottom[-j-1]:
+                visible = True
+                max_bottom[-j-1] = int(line[-j-1])
+            if visible:
+                res.add((len(lines)-i-1, len(line)-j-1))
+                
+    print(len(res))
+
+def day_eight_part_b():
+    with open("AoC_day_eight.txt") as fd:
+        input = fd.read()
+    lines = input.split("\n")
+    
+    def get_scenic_score(i, j):
+        height = int(lines[i][j])
+
+        k_i = i - 1
+        ans_left = 1 if i > 0 else 0
+        while k_i > 0 and int(lines[k_i][j]) < height:
+            ans_left += 1
+            k_i -= 1
+        k_i = i + 1
+        ans_right = 1 if i < len(lines) - 1 else 0
+        while k_i < len(lines) - 1 and int(lines[k_i][j]) < height:
+            ans_right += 1
+            k_i += 1
+        
+        k_j = j - 1
+        ans_top = 1 if j > 0 else 0
+        while k_j > 0 and int(lines[i][k_j]) < height:
+            ans_top += 1
+            k_j -= 1
+        k_j = j + 1
+        ans_bottom = 1 if j < len(lines[0]) - 1 else 0
+        while k_j < len(lines[0]) - 1 and int(lines[i][k_j]) < height:
+            ans_bottom += 1
+            k_j += 1
+        
+        return ans_top * ans_bottom * ans_right * ans_left
+    
+    res = 0
+    for i in range(len(lines)):
+        for j in range(len(lines[0])):
+            temp = get_scenic_score(i, j)
+            if temp > res:
+                res = temp
+
+    print(res)
+    
+
+    
+day_eight_part_b()
